@@ -11,21 +11,20 @@ endif
 
 let g:loaded_extra_utils = 1
 
-function! exutils#kill_line() abort
-  let [text_before_cursor, text_after_cursor] = exutils#split_line_text_at_cursor()
-  if len(text_after_cursor) == 0
-    normal! J
-  else
-    call setreg('"', text_after_cursor)
-    call setline(line('.'), text_before_cursor)
+function! exutils#kill_cmd_line(backwards) abort
+  let [text_before_cursor, text_after_cursor] = exutils#split_line_text_at_cursor(v:true)
+  call setreg('"', a:backwards ? text_before_cursor : text_after_cursor)
+  if a:backwards
+    call setcmdpos(1)
   endif
-  return ''
+  return a:backwards ? text_after_cursor : text_before_cursor
 endfunction
 
-function! exutils#split_line_text_at_cursor() abort
-  let line_text = getline(line('.'))
-  let text_after_cursor  = line_text[col('.')-1 :]
-  let text_before_cursor = (col('.') > 1) ? line_text[: col('.')-2] : ''
+function! exutils#split_line_text_at_cursor(cmdline) abort
+  let line = a:cmdline ? getcmdline() : getline('.')
+  let pos = a:cmdline ? getcmdpos() : col('.')
+  let text_after_cursor = strpart(line, pos - 1, strlen(line))
+  let text_before_cursor = strpart(line, 0, pos - 1)
   return [text_before_cursor, text_after_cursor]
 endfunction
 
